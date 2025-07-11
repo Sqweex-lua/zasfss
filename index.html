@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Babyin Coin — Jungle Tap</title>
+    <style>
+        body {
+            background: url('/static/jungle_bg.jpg') no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Papyrus', fantasy;
+            color: #fffbe6;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            margin-top: 30px;
+            font-size: 36px;
+            text-shadow: 2px 2px #6b4d1c;
+        }
+
+        .counter {
+            font-size: 22px;
+            margin: 10px 0;
+            background-color: rgba(0,0,0,0.4);
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 10px;
+        }
+
+        .coin {
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background-image: url('/static/bbn_baboon_coin.png');
+            background-size: cover;
+            background-position: center;
+            margin: 20px auto;
+            box-shadow: 0 0 15px #ffd700;
+            transition: transform 0.2s ease;
+            cursor: pointer;
+        }
+
+        .coin:active {
+            transform: scale(1.15) rotate(5deg);
+        }
+
+        .booster-buttons {
+            margin: 20px 0;
+        }
+
+        .booster-buttons button {
+            font-size: 18px;
+            margin: 5px;
+            padding: 10px 20px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .leaderboard {
+            margin-top: 30px;
+            background-color: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            padding: 15px;
+            width: 300px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .leaderboard h2 {
+            margin-bottom: 10px;
+        }
+
+        .leaderboard ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .leaderboard li {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🐒 Babyin Coin — Jungle Tap!</h1>
+    <div class="counter">Тапов: <span id="tap-count">0</span></div>
+
+    <div class="booster-buttons">
+        <button onclick="setBooster('none')">Обычный Тап</button>
+        <button onclick="setBooster('banana')">🍌 Банановый заряд</button>
+        <button onclick="setBooster('alpha')">🦍 Рык альфы</button>
+    </div>
+
+    <div class="coin" onclick="tapCoin()"></div>
+
+    <div class="leaderboard">
+        <h2>📊 Лидеры</h2>
+        <ul id="leaders"></ul>
+    </div>
+
+    <script>
+        let count = 0;
+        let booster = 'none';
+        const user_id = '792315262'; // Подставь реальный Telegram ID
+
+        function setBooster(b) {
+            booster = b;
+        }
+
+        function tapCoin() {
+            fetch("/tap", {
+                method: "POST",
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `user_id=${user_id}&booster=${booster}`
+            })
+            .then(res => res.json())
+            .then(data => {
+                count = data.new_count;
+                document.getElementById("tap-count").textContent = count;
+                loadLeaderboard();
+            });
+        }
+
+        function loadLeaderboard() {
+            fetch("/leaderboard")
+            .then(res => res.json())
+            .then(data => {
+                const ul = document.getElementById("leaders");
+                ul.innerHTML = "";
+                data.forEach(([uid, c], index) => {
+                    ul.innerHTML += `<li>#${index + 1} — ${uid}: ${c} тапов</li>`;
+                });
+            });
+        }
+
+        window.onload = loadLeaderboard;
+    </script>
+</body>
+  </html>
